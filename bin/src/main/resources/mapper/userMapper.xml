@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.openeg.openegscts.student.repository.IUserMapper">
+
+    <insert id="signUpUser" useGeneratedKeys="true" keyProperty="userId" parameterType="com.openeg.openegscts.student.entity.Users">
+        insert into user_tb(user_id, name, email, password, type, reg_date, is_oauth) values(#{userId}, #{name}, #{email}, #{password}, 1, DATE_FORMAT(SYSDATE(), '%Y/%m/%d %H:%i:%s'), 0)
+    </insert>
+
+    <insert id="signUpUserOAuth" useGeneratedKeys="true" keyProperty="userId" parameterType="com.openeg.openegscts.student.entity.Users">
+        insert ignore into user_tb(user_id, name, email, type, reg_date, is_oauth) values(#{userId}, #{name}, #{email}, 1, DATE_FORMAT(SYSDATE(), '%Y/%m/%d %H:%i:%s'), 1)
+    </insert>
+
+    <select id="findByEmail" resultType="com.openeg.openegscts.student.entity.Users" parameterType="string">
+        select user_id as userId,
+               name,
+               email,
+               password,
+               type,
+               reg_date as regDate
+        from user_tb
+        where email=#{email}
+    </select>
+
+    <select id="confirmUser" resultType="com.openeg.openegscts.student.entity.Users" parameterType="string">
+        select user_id as userId,
+               name,
+               email,
+               password,
+               type,
+               reg_date as regDate
+        from user_tb
+        where email=#{email}
+        and (type=1 or type=0)
+    </select>
+
+    <select id="confirmUserOauth" resultType="com.openeg.openegscts.student.entity.Users" parameterType="string">
+        select user_id as userId,
+               name,
+               email,
+               type,
+               reg_date as regDate
+        from user_tb
+        where email=#{email}
+    </select>
+
+    <select id="getUserById" resultType="com.openeg.openegscts.student.entity.Users" parameterType="String">
+        select user_id as userId,
+               name,
+               email,
+               password,
+               type,
+               reg_date as regDate,
+               is_oauth as isOauth
+        from user_tb
+        where user_id=#{userId}
+    </select>
+
+    <select id="getSolvedCode" resultType="com.openeg.openegscts.student.entity.SolvedCode" parameterType="String">
+        select l.language_type as languageType,
+               sec.sec_name as secName,
+               s.solved_id as solvedId,
+               s.scode_id as scodeId,
+               s.try_num_first as tryNumFirst,
+               s.try_num_second as tryNumSecond,
+               s.solved_date_first as solvedDateFirst,
+               s.solved_date_second as solvedDateSecond
+        from language_tb l, security_tb sec, solved_code_tb s, submit_code_tb sb
+        where s.user_id=#{userId}
+            and s.scode_id = sb.scode_id
+            and sb.language_id = l.language_id
+            and sb.sec_id = sec.sec_id
+        order by s.try_num_first asc
+    </select>
+
+    <select id="confirmPwd" resultType="com.openeg.openegscts.student.entity.Users" parameterType="string">
+        select email
+        from user_tb
+        where password=#{password}
+    </select>
+
+    <update id="updateUser" parameterType="com.openeg.openegscts.student.entity.Users">
+        update user_tb set name=#{name}, password=#{password} where user_id=#{userId}
+    </update>
+
+</mapper>

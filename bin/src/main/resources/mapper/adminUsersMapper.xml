@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.openeg.openegscts.admin.repository.IAdminUsersMapper">
+
+    <select id="getUsersForAdmin" resultType="com.openeg.openegscts.admin.dto.UsersListDto">
+        select user_id as userId,
+               name,
+               email,
+               type,
+               reg_date as regDate
+        from user_tb
+        order by reg_date asc
+    </select>
+
+    <delete id="deleteUser" parameterType="string">
+        delete from user_tb where user_id=#{userId}
+    </delete>
+
+</mapper>

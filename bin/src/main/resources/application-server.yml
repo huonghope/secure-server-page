@@ -1,0 +1,70 @@
+server:
+  port: 10000
+
+spring:
+  application:
+    name: secolab
+
+  profiles:
+    include: oauth
+
+  devtools:
+    restart:
+      enabled: true
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/secolab?serverTimezone=UTC&characterEncoding=UTF-8&allowMultiQueries=true #
+    username: openeg
+    password: Openeg2020!
+    driver: com.mysql.jdbc.Driver
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 2000MB
+      max-request-size: 2150MB
+
+mybatis:
+  type-aliases-package: com.openeg.sctsusers.entity
+  mapper-locations: mapper/**/*.xml
+
+login:
+  url:
+    path: /users/login
+  front-page: http://59.6.55.253/student
+
+token:
+  expiration_time: 86400000
+  secret: scts_secret
+
+authorization:
+  token:
+    header:
+      name: Authorization
+      prefix: Bearer
+
+access:
+  header:
+    name: Access-Control-Allow-Origin
+
+##
+ip:
+  addr: http://59.6.55.253
+
+front:
+  host: http://59.6.55.253:5000
+
+save:
+  pdf:
+    path: /home/openeg/pdf/
+    db-path: /pdf/
+    file: file:///home/openeg/pdf
+  video:
+    path: /home/openeg/video/
+    db-path : /video/
+    file: file:///home/openeg/video
+  code:
+    path: /home/openeg/code/
+
+compile:
+  path: /home/openeg/code/compile/

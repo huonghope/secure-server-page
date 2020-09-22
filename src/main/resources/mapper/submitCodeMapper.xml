@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.openeg.openegscts.trainer.repository.ISubmitCodeMapper">
+
+    <insert id="insertSubmitCode" useGeneratedKeys="true" keyProperty="scodeId" parameterType="com.openeg.openegscts.trainer.entity.SubmitCode">
+        insert into submit_code_tb(scode_id,
+                            user_id,
+                            sec_id,
+                            language_id,
+                            scode_vul_file,
+                            scode_vul_desc,
+                            scode_sec_file,
+                            scode_sec_desc,
+                            scode_line_num,
+                            scode_reg_date,
+                            scode_keyword,
+                            reject_reason)
+                values(#{scodeId},
+                       #{userId},
+                       #{secId},
+                       #{languageId},
+                       #{scodeVulFile},
+                       #{scodeVulDesc},
+                       #{scodeSecFile},
+                       #{scodeSecDesc},
+                       #{scodeLineNum},
+                       DATE_FORMAT(SYSDATE(), '%Y/%m/%d %H:%i:%s'),
+                       #{scodeKeyword},
+                       0)
+    </insert>
+
+    <select id="getUserEmail" resultType="com.openeg.openegscts.student.entity.Users" parameterType="string">
+        select email
+        from user_tb
+        where user_id=#{userId}
+    </select>
+
+    <select id="getSVbyCategory" resultType="com.openeg.openegscts.trainer.entity.SubmitCode" parameterType="long">
+        select sec_name as secName,
+               sec_id as secId
+        from security_tb
+        where scategory_id=#{scategoryId}
+    </select>
+
+    <select id="getLastData" resultType="com.openeg.openegscts.trainer.entity.SubmitCode">
+        select scode_num as scodeNum
+        from submit_code_tb
+        order by scode_num desc limit 1
+    </select>
+
+    <select id="getSubmitCodeList" resultType="com.openeg.openegscts.trainer.entity.SubmitCode" parameterType="string">
+        select sb.scode_id as scodeId,
+               sb.sec_id as secId,
+               sb.language_id as languageId,
+               l.language_type as languageType,
+               sec.sec_name as secName,
+               sc.scategory_name as scategoryName,
+               sb.scode_approval as scodeApproval,
+               sb.scode_reg_date as scodeRegDate
+        from submit_code_tb sb, language_tb l, security_tb sec, security_category_tb sc
+        where sb.user_id=#{userId}
+            and sb.language_id = l.language_id
+            and sb.sec_id = sec.sec_id
+            and sec.scategory_id=sc.scategory_id
+        order by sb.scode_reg_date desc
+    </select>
+
+    <select id="getSubmitCode" resultType="com.openeg.openegscts.trainer.entity.SubmitCode" parameterType="string">
+        select sb.scode_id as scodeId,
+               sb.scode_num as scodeNum,
+               sb.user_id as userId,
+               sec.sec_id as secId,
+               sb.scode_vul_file as scodeVulFile,
+               sb.scode_vul_desc as scodeVulDesc,
+               sb.scode_sec_file as scodeSecFile,
+               sb.scode_sec_desc as scodeSecDesc,
+               sb.scode_line_num as scodeLineNum,
+               sb.scode_approval as scodeApproval,
+               sb.scode_reg_date as scodeRegDate,
+               sb.scode_try_num as scodeTryNum,
+               sb.scode_succ_num as scodeSuccNum,
+               sb.scode_keyword as scodeKeyword,
+               l.language_id as languageId,
+               l.language_type as languageType,
+               sec.sec_name as secName,
+               sc.scategory_id as scategoryId,
+               sc.scategory_name as scategoryName,
+               sb.reject_reason as rejectReason
+        from submit_code_tb sb, language_tb l, security_tb sec, security_category_tb sc
+        where sb.scode_id=#{scodeId}
+            and sb.language_id = l.language_id
+            and sb.sec_id = sec.sec_id
+            and sec.scategory_id=sc.scategory_id
+    </select>
+
+    <update id="updateSubmitCode" parameterType="com.openeg.openegscts.trainer.entity.SubmitCode">
+        update submit_code_tb set language_id=#{languageId},
+                                  sec_id=#{secId},
+                                  scode_vul_file=#{scodeVulFile},
+                                  scode_sec_file=#{scodeSecFile},
+                                  scode_vul_desc=#{scodeVulDesc},
+                                  scode_sec_desc=#{scodeSecDesc},
+                                  scode_line_num=#{scodeLineNum},
+                                  scode_keyword=#{scodeKeyword}
+        where scode_id=#{scodeId}
+    </update>
+
+    <delete id="deleteSubmitCode" parameterType="string">
+        delete from submit_code_tb where scode_id=#{scodeId}
+    </delete>
+
+</mapper>
