@@ -24,7 +24,6 @@ public class OpenegApplication {
     }
 
     public static void main(String[] args) {
-    	System.out.println("hello");
         SpringApplication.run(OpenegApplication.class, args);
     }
 
@@ -52,8 +51,6 @@ public class OpenegApplication {
 
         FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
         bean.setOrder(0);
-        
-        System.out.println("aaa" + env.getProperty("front.host"));
         return bean;
     }
 }

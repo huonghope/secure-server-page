@@ -22,4 +22,7 @@ public interface IUsersService extends UserDetailsService {
     int confirmPwd(String userId, String Password);
     UsersDto updateUser(UsersDto usersDto);
     List<SolvedCode> getSolvedCode(String userId);
+    
+    
+    
 }

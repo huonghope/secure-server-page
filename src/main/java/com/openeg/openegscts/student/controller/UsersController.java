@@ -1,12 +1,20 @@
 package com.openeg.openegscts.student.controller;
 
+import com.openeg.openegscts.student.entity.Project;
+import com.openeg.openegscts.student.entity.SecurityCode;
 import com.openeg.openegscts.student.entity.SolvedCode;
 import com.openeg.openegscts.student.entity.Users;
 import com.openeg.openegscts.student.model.ConfirmPwdModel;
+import com.openeg.openegscts.student.model.CreateProject;
+import com.openeg.openegscts.student.model.CreateSpringProject;
 import com.openeg.openegscts.student.model.CreateUserResponseModel;
 import com.openeg.openegscts.student.model.LoginRequestModel;
 import com.openeg.openegscts.student.model.UserInfoResponseModel;
+import com.openeg.openegscts.student.service.IProjectService;
 import com.openeg.openegscts.student.service.IUsersService;
+import com.openeg.openegscts.student.dto.ProjectDto;
+import com.openeg.openegscts.student.dto.SecurityCodeDto;
+import com.openeg.openegscts.student.dto.SpringProjectDto;
 import com.openeg.openegscts.student.dto.UsersDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -21,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Type;
@@ -33,12 +42,14 @@ import java.util.*;
 public class UsersController {
 
     IUsersService service;
+    IProjectService projectService;
     Environment env;
     ModelMapper modelMapper = new ModelMapper();
 
     @Autowired
-    public UsersController(IUsersService service, Environment env) {
+    public UsersController(IUsersService service,IProjectService projectService,  Environment env) {
         this.service = service;
+        this.projectService = projectService;
         this.env = env;
     }
 
@@ -71,7 +82,6 @@ public class UsersController {
             @RequestBody LoginRequestModel loginRequestModel
             , HttpServletResponse response
     ) {
-    	System.out.println("Hello I connected login");
         UsersDto userDto = service.confirmUser(loginRequestModel.getEmail(), loginRequestModel.getPassword());
 
         if(userDto != null){
@@ -131,8 +141,7 @@ public class UsersController {
     }
 
     @GetMapping("/list/{userId}")
-    public @ResponseBody
-    List<SolvedCode> getSolvedCode(@PathVariable String userId) {
+    public @ResponseBody List<SolvedCode> getSolvedCode(@PathVariable String userId) {
 
         List<SolvedCode> returnValue = new ArrayList<>();
         List<SolvedCode> solvedCodeList = service.getSolvedCode(userId);
@@ -171,4 +180,38 @@ public class UsersController {
         return null;
     }
 
+    //일발 프로잭트: Nodejs & Python
+    @PostMapping("/createproject")
+    public ResponseEntity<String> createProject(@RequestBody CreateProject createProject)
+    {
+    	ProjectDto projectDto = modelMapper.map(createProject, ProjectDto.class);
+		ProjectDto createProjectDto = projectService.createProject(projectDto);
+		
+	    if(createProjectDto != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body("failed");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body("success");
+    }
+    
+    //Spring 프로잭트: Spring Project
+    @PostMapping("/createspringproject")
+    public ResponseEntity<String> createSpringProject(@RequestBody CreateSpringProject createSpringProject)
+    {
+		SpringProjectDto createSpringProjectDto = modelMapper.map(createSpringProject, SpringProjectDto.class);
+		SpringProjectDto createProjectDto = projectService.createSpringProject(createSpringProjectDto);
+	    if(createProjectDto != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body("failed");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body("success");
+    }
+    @GetMapping("/getmyprojects/{userId}")
+    public ResponseEntity<List<Project>> getListMyProjects(@PathVariable String userId)
+    {
+    	 List<Project> returnValue = new ArrayList<>();
+    	 returnValue = projectService.getMyProjects(userId);
+	    if(returnValue != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
+    }
 }

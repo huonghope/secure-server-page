@@ -84,5 +84,24 @@
     <update id="updateUser" parameterType="com.openeg.openegscts.student.entity.Users">
         update user_tb set name=#{name}, password=#{password} where user_id=#{userId}
     </update>
+    
+    <insert id="insertProject" parameterType="com.openeg.openegscts.student.entity.Users" >
+        insert ignore into project_tb(project_id, user_id, project_name, project_type) values(#{projectId}, #{projectUserId}, #{projectName}, #{projectType}) 
+    </insert>
+     <insert id="insertSpringProject" parameterType="com.openeg.openegscts.student.entity.Users" >
+        insert ignore into project_tb(project_id, user_id, project_name, project_type) values(#{projectId}, #{projectUserId}, #{projectName}, #{projectType});
+        insert ignore into project_tb_spring(id, project_id, project_build_type, project_language, project_spring_boot_ver, project_meta_group, project_meta_desc, project_mata_package) 
+        values(#{projectSpringId}, #{projectId}, #{projectBuildType}, #{projectLanguage}, #{projectSpringBootVer}, #{projectMetaGroup}, #{projectMetaDesc}, #{projectMetaPackage})
+    </insert>
+    <select id="getMyProjects" resultType="com.openeg.openegscts.student.entity.Project" parameterType="string">
+        select p.project_id as projectId,
+        p.user_id as userId,
+        p.project_name as projectName,
+        p.project_type as projectType,
+        p.project_created as projectCreated
+        from project_tb p
+        where user_id=#{userId}
+    </select>
+    
 
 </mapper>

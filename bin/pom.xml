@@ -8,16 +8,14 @@
         <version>2.3.1.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.openeg</groupId>
+   	<groupId>com.openeg</groupId>
     <artifactId>openeg-scts</artifactId>
     <version>0.1</version>
     <name>openeg-scts</name>
     <description>SCTS service</description>
-
     <properties>
         <java.version>1.8</java.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -99,11 +97,12 @@
 
         <!-- model 관련 라이브러리 -->
         <!-- https://mvnrepository.com/artifact/org.modelmapper/modelmapper -->
-        <dependency>
+        <!-- <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
             <version>2.3.7</version>
-        </dependency>
+        </dependency>-->
+        
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>

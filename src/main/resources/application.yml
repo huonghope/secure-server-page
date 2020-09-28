@@ -15,7 +15,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/secolab?serverTimezone=UTC&characterEncoding=UTF-8&allowMultiQueries=true
     username: root
-    password: plass3343
+    password: huong
     driver: com.mysql.jdbc.Driver
 
 
@@ -50,11 +50,11 @@ access:
 ##
 # 고정 아이피 주소
 ip:
-  addr: http://210.94.194.81
+  addr: http://210.94.194.70
 
 # front 포트
 front:
-  host: http://210.94.194.81:5000
+  host: http://210.94.194.70:5000
 
 save:
   # pdf 파일 저장 경로

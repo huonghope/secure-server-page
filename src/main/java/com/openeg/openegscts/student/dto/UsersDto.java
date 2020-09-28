@@ -15,7 +15,7 @@ public class UsersDto {
     private int type;
     private Date regDate;
     private int isOauth;
-
+    
     @Builder
     public UsersDto(String userId, String name, String email, String password, int type, Date regDate) {
         this.userId = userId;
