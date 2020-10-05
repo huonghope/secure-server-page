@@ -54,6 +54,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        
+        <!-- https://mvnrepository.com/artifact/org.zaproxy/zap-clientapi -->
+		<dependency>
+		    <groupId>org.zaproxy</groupId>
+		    <artifactId>zap-clientapi</artifactId>
+		    <version>1.8.0</version>
+		</dependency>
+		        
 
         <!-- jaxb 관련 라이브러리 https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
         <dependency>

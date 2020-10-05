@@ -90,7 +90,7 @@
     </insert>
      <insert id="insertSpringProject" parameterType="com.openeg.openegscts.student.entity.Users" >
         insert ignore into project_tb(project_id, user_id, project_name, project_type) values(#{projectId}, #{projectUserId}, #{projectName}, #{projectType});
-        insert ignore into project_tb_spring(id, project_id, project_build_type, project_language, project_spring_boot_ver, project_meta_group, project_meta_desc, project_mata_package) 
+        insert ignore into project_tb_spring(id, project_id, project_build_type, project_language, project_spring_boot_ver, project_meta_group, project_meta_desc, project_meta_package) 
         values(#{projectSpringId}, #{projectId}, #{projectBuildType}, #{projectLanguage}, #{projectSpringBootVer}, #{projectMetaGroup}, #{projectMetaDesc}, #{projectMetaPackage})
     </insert>
     <select id="getMyProjects" resultType="com.openeg.openegscts.student.entity.Project" parameterType="string">
@@ -102,6 +102,4 @@
         from project_tb p
         where user_id=#{userId}
     </select>
-    
-
 </mapper>
