@@ -40,6 +40,7 @@ public class DynamicAnalyzer {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
 			
 		} catch (Exception e) {
+			 System.out.println("프로젝트 진단 오류" + e);
 			 return ResponseEntity.status(HttpStatus.CREATED).body("failed");
 			// TODO: handle exception
 		}

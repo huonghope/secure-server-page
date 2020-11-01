@@ -32,10 +32,12 @@ public class ProjectServiceImpl implements IProjectService{
 	@Override
 	public ProjectDto createProject(ProjectDto projectDto) {
 		
+		//프로젝트 경로 == 프로젝트 이름
 		projectDto = ProjectDto.builder()
 					.projectId(UUID.randomUUID().toString())
 					.projectUserId(projectDto.getProjectUserId())
 	                .projectName(projectDto.getProjectName())
+	                .projectPath(projectDto.getProjectName())
 	                .projectType(projectDto.getProjectType())
 	                .build();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
@@ -65,6 +67,7 @@ public class ProjectServiceImpl implements IProjectService{
 				.projectUserId(springProjectDto.getProjectUserId())
 				.projectName(springProjectDto.getProjectName())
 				.projectType(springProjectDto.getProjectType())
+				.projectPath(springProjectDto.getProjectName())
 				
 				.projectSpringId(UUID.randomUUID().toString()) // spring project table ID
 	

@@ -13,6 +13,7 @@ public class SpringProjectDto {
 	private String projectUserId;
 	private String projectName;
 	private String projectType;
+	private String projectPath;
 	
 	private String projectSpringId;
 	private String projectBuildType;
@@ -23,12 +24,13 @@ public class SpringProjectDto {
 	private String projectMetaPackage;
 	
 	@Builder
-    public SpringProjectDto(String projectId,String projectUserId,  String projectName, String projectType,
+    public SpringProjectDto(String projectId,String projectUserId,  String projectName, String projectType, String projectPath,
     		String projectSpringId, String projectBuildType, String projectLanguage, String projectSpringBootVer, String projectMetaGroup, String projectMetaDesc, String projectMetaPackage) {
 		this.projectId = projectId;
 		this.projectUserId = projectUserId;
 		this.projectName = projectName;
 		this.projectType = projectType;
+		this.projectPath = projectPath;
 		
 		this.projectSpringId = projectSpringId;
 		this.projectBuildType = projectBuildType;

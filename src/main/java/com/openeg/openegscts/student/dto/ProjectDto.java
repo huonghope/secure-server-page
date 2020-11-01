@@ -13,13 +13,15 @@ public class ProjectDto {
 	private String projectName;
 	private String projectType;
 	private String projectId;
+	private String projectPath;
 	private Date projectCreated;
 	
 	@Builder
-    public ProjectDto(String projectUserId, String projectId, String projectName, String projectType) {
+    public ProjectDto(String projectUserId, String projectId, String projectName, String projectType, String projectPath) {
 		this.projectUserId = projectUserId;
 		this.projectId = projectId;
         this.projectName = projectName;
         this.projectType = projectType;
+        this.projectPath = projectPath;
     }
 }

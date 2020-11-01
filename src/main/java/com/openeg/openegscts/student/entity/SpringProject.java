@@ -19,6 +19,7 @@ public class SpringProject {
 	private String projectUserId;
 	private String projectName;
 	private String projectType;
+	private String projectPath;
 	private Date projectCreated;
 	
 	// spring project table
@@ -30,12 +31,4 @@ public class SpringProject {
 	private String projectMetaDesc;
 	private String projectMetaPackage;
 	
-//	@Builder
-//    public Project(String projectUserId, String projectId, String projectName, String projectType, Date projectCreated) {
-//        this.projectUserId = projectUserId;
-//        this.projectId = projectId;
-//        this.projectName = projectName;
-//        this.projectType = projectType;
-//        this.projectCreated = projectCreated;
-//    }
 }

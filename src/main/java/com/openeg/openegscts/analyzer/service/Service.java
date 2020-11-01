@@ -12,7 +12,7 @@ import org.zaproxy.clientapi.core.ClientApiException;
 
 public class Service {
 
-    private static final String ZAP_ADDRESS = "localhost"; //210.94.194.81
+    private static final String ZAP_ADDRESS = "210.94.194.70"; //210.94.194.81
     private static final int ZAP_PORT = 8081; //
     
     // Change to match the API key set in ZAP, or use NULL if the API key is disabled

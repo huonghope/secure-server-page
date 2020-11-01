@@ -188,9 +188,9 @@ public class UsersController {
 		ProjectDto createProjectDto = projectService.createProject(projectDto);
 		
 	    if(createProjectDto != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body("failed");
+            return ResponseEntity.status(HttpStatus.CREATED).body("success");
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body("success");
+        return ResponseEntity.status(HttpStatus.CREATED).body("failed");
     }
     
     //Spring 프로잭트: Spring Project
@@ -199,10 +199,11 @@ public class UsersController {
     {
 		SpringProjectDto createSpringProjectDto = modelMapper.map(createSpringProject, SpringProjectDto.class);
 		SpringProjectDto createProjectDto = projectService.createSpringProject(createSpringProjectDto);
+//		System.out.println("Hello" + createProjectDto);
 	    if(createProjectDto != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body("failed");
+            return ResponseEntity.status(HttpStatus.CREATED).body("success");
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body("success");
+        return ResponseEntity.status(HttpStatus.CREATED).body("failed");
     }
     @GetMapping("/getmyprojects/{userId}")
     public ResponseEntity<List<Project>> getListMyProjects(@PathVariable String userId)
@@ -214,4 +215,12 @@ public class UsersController {
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
     }
+    
+// 	//Container 생성
+//    @PostMapping("/createcontainer")
+//    public ResponseEntity<String> createContainer(@RequestBody)
+//    {
+//    	
+//    }
+    
 }
