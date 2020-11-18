@@ -2,6 +2,7 @@ package com.openeg.openegscts.student.repository;
 
 import com.openeg.openegscts.student.dto.UsersDto;
 import com.openeg.openegscts.student.entity.Project;
+import com.openeg.openegscts.student.entity.ProjectDiagnosis;
 import com.openeg.openegscts.student.entity.SolvedCode;
 import com.openeg.openegscts.student.entity.SpringProject;
 import com.openeg.openegscts.student.entity.Users;
@@ -30,4 +31,10 @@ public interface IUserMapper {
     int insertProject(Project project);
     int insertSpringProject(SpringProject project);
     List<Project> getMyProjects(String userId);
+    
+    boolean deleteProject(String projectId);
+    boolean insertHistoryDiagnosis(String projectId, String userId, String path);
+    List<Project> checkProjectName(String project);
+    Project getProjectById(String projectId);
+    List<ProjectDiagnosis> getProjectDiagnosis(String userId);
 }

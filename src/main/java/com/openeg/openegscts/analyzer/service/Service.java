@@ -40,7 +40,7 @@ public class Service {
             while (true) {
                 Thread.sleep(1000);
                 progress = Integer.parseInt(((ApiResponseElement) api.spider.status(scanID)).getValue());
-                System.out.println("Spider progress : " + progress + "%");
+                System.out.println("Spider progress : " + progress + "% :" + TARGET);
                 if (progress >= 100) {
                     break;
                 }

@@ -199,12 +199,13 @@ public class UsersController {
     {
 		SpringProjectDto createSpringProjectDto = modelMapper.map(createSpringProject, SpringProjectDto.class);
 		SpringProjectDto createProjectDto = projectService.createSpringProject(createSpringProjectDto);
-//		System.out.println("Hello" + createProjectDto);
 	    if(createProjectDto != null) {
             return ResponseEntity.status(HttpStatus.CREATED).body("success");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body("failed");
     }
+    
+    //프로젝트 출력함
     @GetMapping("/getmyprojects/{userId}")
     public ResponseEntity<List<Project>> getListMyProjects(@PathVariable String userId)
     {
@@ -216,11 +217,38 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
     }
     
-// 	//Container 생성
-//    @PostMapping("/createcontainer")
-//    public ResponseEntity<String> createContainer(@RequestBody)
-//    {
-//    	
-//    }
+    //해당하는 프로젝트 출력함
+    @GetMapping("/getprojectInfor/{projectId}")
+    public ResponseEntity<Project> getProjectById(@PathVariable String projectId)
+    {
+    	 Project returnValue = new Project();
+    	 returnValue = projectService.getProjectById(projectId);
+	    if(returnValue != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
+    }
+    //프로젝트 삭제
+    @DeleteMapping("/deleteproject/{projectId}")
+    public ResponseEntity<String> deletProject(@PathVariable String projectId)
+    {
+    
+    	 boolean returnValue = service.deleteProject(projectId);
+		 if(returnValue) {
+	         return ResponseEntity.status(HttpStatus.CREATED).body("success");
+	     }
+	     return ResponseEntity.status(HttpStatus.CREATED).body("fail");   	
+    }
+    
+    //프로젝트 출력함
+    @GetMapping("/checkExistsProjectName/{projectName}")
+    public ResponseEntity<String> checkExistsProjectName(@PathVariable String projectName)
+    {
+    	boolean returnValue = projectService.checkExistsProjectName(projectName);
+	    if(returnValue != false) {
+            return ResponseEntity.status(HttpStatus.CREATED).body("exists");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body("no-exists");
+    }
     
 }

@@ -1,5 +1,6 @@
 package com.openeg.openegscts.student.service;
 
+import com.openeg.openegscts.student.entity.ProjectDiagnosis;
 import com.openeg.openegscts.student.entity.SolvedCode;
 import com.openeg.openegscts.student.entity.Users;
 import com.openeg.openegscts.student.repository.IUserMapper;
@@ -243,4 +244,22 @@ public class UsersServiceImpl implements IUsersService {
         Users userEntity = mapper.getUserById(usersDto.getUserId());
         return new ModelMapper().map(userEntity, UsersDto.class);
     }
+
+    @Override
+    public boolean deleteProject(String projectId) {
+    	boolean result = mapper.deleteProject(projectId);
+		return result;
+    }
+    @Override
+    public boolean insertHistoryDiagnosis(String projectId, String userId, String path) {
+    	boolean result = mapper.insertHistoryDiagnosis(projectId, userId, path);
+    	System.out.println("result" + result);
+		return result;
+    }
+
+	@Override
+	public List<ProjectDiagnosis> getProjectDiagnosis(String projectId) {
+		 List<ProjectDiagnosis> listDiagnosis = mapper.getProjectDiagnosis(projectId);
+		return listDiagnosis;
+	}
 }

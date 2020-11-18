@@ -1,7 +1,7 @@
 package com.openeg.openegscts.student.service;
 
-
 import com.openeg.openegscts.student.dto.UsersDto;
+import com.openeg.openegscts.student.entity.ProjectDiagnosis;
 import com.openeg.openegscts.student.entity.SolvedCode;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -23,6 +23,7 @@ public interface IUsersService extends UserDetailsService {
     UsersDto updateUser(UsersDto usersDto);
     List<SolvedCode> getSolvedCode(String userId);
     
-    
-    
+    boolean deleteProject(String projectId);
+    boolean insertHistoryDiagnosis(String projectId, String userId, String path);
+    List<ProjectDiagnosis> getProjectDiagnosis(String projectId);
 }

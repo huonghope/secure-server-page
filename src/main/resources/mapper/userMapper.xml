@@ -102,5 +102,45 @@
         p.project_path as projectPath
         from project_tb p
         where user_id=#{userId}
+        order by project_created asc
+    </select>
+     <select id="getProjectById" resultType="com.openeg.openegscts.student.entity.Project" parameterType="string">
+       select p.project_id as projectId,
+       p.user_id as projectUserId,
+       p.project_name as projectName,
+       p.project_type as projectType,
+       p.project_created as projectCreated,
+       p.project_path as projectPath
+       from project_tb p
+       where p.project_id=#{projectId}
+       order by project_created asc
+   </select>
+    
+    <insert id="insertHistoryDiagnosis"  >
+        insert into project_diagnosis(project_id, user_id, path, result) values(#{projectId}, #{userId}, #{path}, #{path}) 
+    </insert>
+    <delete id="deleteProject" parameterType="string">
+       delete from project_tb where project_id=#{projectId};
+       delete from project_tb_spring where project_id=#{projectId}
+    </delete>
+    
+    <select id="getProjectDiagnosis" resultType="com.openeg.openegscts.student.entity.ProjectDiagnosis" parameterType="string">
+        select pg.project_id as projectId,
+        pg.user_id as userId,
+        pg.path as path,
+        pg.time as time,
+        pg.result as result
+        from project_diagnosis as pg
+        where pg.project_id=#{projectId}
+    </select>
+     <select id="checkProjectName" resultType="com.openeg.openegscts.student.entity.Project" parameterType="string">
+        select p.project_id as projectId,
+        p.user_id as userId,
+        p.project_name as projectName,
+        p.project_type as projectType,
+        p.project_created as projectCreated,
+        p.project_path as projectPath
+        from project_tb p
+        where p.project_name=#{projectName}
     </select>
 </mapper>

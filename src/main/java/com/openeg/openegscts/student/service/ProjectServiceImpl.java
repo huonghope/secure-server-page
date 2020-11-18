@@ -59,6 +59,17 @@ public class ProjectServiceImpl implements IProjectService{
 			return null;
 		}
 	}
+	
+	@Override
+	public Project getProjectById(String projectId) {
+		try {
+			Project project = userMapper.getProjectById(projectId);
+			return project;
+		} catch (Exception e) {
+			System.out.println(e);
+			return null;
+		}
+	}
 
 	@Override
 	public SpringProjectDto createSpringProject(SpringProjectDto springProjectDto) {
@@ -80,12 +91,20 @@ public class ProjectServiceImpl implements IProjectService{
 				.build();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 	
-		System.out.println(springProjectDto);
 		
 		SpringProject projectEntity = modelMapper.map(springProjectDto, SpringProject.class);
 	    userMapper.insertSpringProject(projectEntity);
 	
 	    SpringProjectDto returnValue = modelMapper.map(projectEntity, SpringProjectDto.class);
 	    return returnValue;
+	}
+	
+	@Override
+	public boolean checkExistsProjectName(String projectName) {
+		List<Project> result = userMapper.checkProjectName(projectName);
+		if(result.size() == 0) {
+			return false;
+		}
+		return true;
 	}
 }

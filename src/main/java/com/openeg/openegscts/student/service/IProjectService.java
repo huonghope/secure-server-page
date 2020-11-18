@@ -11,4 +11,7 @@ public interface IProjectService {
 	ProjectDto createProject(ProjectDto project);
 	SpringProjectDto createSpringProject(SpringProjectDto project);
 	List<Project> getMyProjects(String userId);
+	Project getProjectById(String projectId);
+	
+	boolean checkExistsProjectName(String projectName);
 }
