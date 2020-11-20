@@ -63,18 +63,14 @@ public class DynamicAnalyzer {
 			Project project = projectService.getProjectById(projectId);
 		
 			Service zapapi = new Service();
-            
+          
 			// 해당하는 프로젝트 Id를 부터 url를 출력해서 밑에 target로 바꿔주시면 됩니다.
             result = zapapi.runActiveScanRules("https://public-firing-range.appspot.com/redirect/index.html", typeReport);
-            //save result to file
-
-            
-            
+             
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     	    LocalDateTime now = LocalDateTime.now();
     	    String fileName = dtf.format(now);
     	    
-    	    System.out.println(projectId + userId + fileName);
     	    service.insertHistoryDiagnosis(projectId, userId, fileName);
             writeFile(project.getProjectUserId(), project.getProjectPath(),fileName, result);
           
@@ -97,23 +93,17 @@ public class DynamicAnalyzer {
 			String typeReport = dynamicAnalyzerModel.getTypereport();
 			
 			List<ProjectDiagnosis> listDiagnosis= service.getProjectDiagnosis(projectId);
-			System.out.println(listDiagnosis.size());
 			
 			 Project returnValue = new Project();
 	    	 returnValue = projectService.getProjectById(projectId);
 	    	 
 			//진단 파일 읽어서 전달
 			for(int i = 0; i < listDiagnosis.size(); i++) {
-				System.out.println(listDiagnosis.get(i).getPath());
-				System.out.println("HISTORY"+ "/" + userId + "/" + returnValue.getProjectName() + "/" + listDiagnosis.get(i).getPath()  + ".json");
 				String result = readFile("HISTORY"+ "/" + userId + "/" + returnValue.getProjectName() + "/" + listDiagnosis.get(i).getPath() + ".json");
-				
 				listDiagnosis.get(i).setResult(result);
 			}
 			Project project = projectService.getProjectById(projectId);
 			
-			
-//          return null;C
            return ResponseEntity.status(HttpStatus.CREATED).body(listDiagnosis);
 			
 		} catch (Exception e) {
@@ -139,7 +129,6 @@ public class DynamicAnalyzer {
 
 	    String directoryName = "";
 	    File directory = new File(userPath);
-	    System.out.println(userPath);
 	    
 	    File directoryProject = null;
 	    if (! directory.exists()){

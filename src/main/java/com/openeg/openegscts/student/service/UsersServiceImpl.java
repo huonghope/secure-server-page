@@ -253,7 +253,6 @@ public class UsersServiceImpl implements IUsersService {
     @Override
     public boolean insertHistoryDiagnosis(String projectId, String userId, String path) {
     	boolean result = mapper.insertHistoryDiagnosis(projectId, userId, path);
-    	System.out.println("result" + result);
 		return result;
     }
 
