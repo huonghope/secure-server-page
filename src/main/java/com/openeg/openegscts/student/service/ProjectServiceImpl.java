@@ -1,5 +1,6 @@
 package com.openeg.openegscts.student.service;
 
+import java.io.File;
 import java.util.List;
 import java.util.UUID;
 import org.modelmapper.ModelMapper;
@@ -31,7 +32,6 @@ public class ProjectServiceImpl implements IProjectService{
 	
 	@Override
 	public ProjectDto createProject(ProjectDto projectDto) {
-		
 		//프로젝트 경로 == 프로젝트 이름
 		projectDto = ProjectDto.builder()
 					.projectId(UUID.randomUUID().toString())
@@ -42,6 +42,7 @@ public class ProjectServiceImpl implements IProjectService{
 	                .build();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
+        
         Project projectEntity = modelMapper.map(projectDto, Project.class);
         userMapper.insertProject(projectEntity);
 
@@ -60,6 +61,17 @@ public class ProjectServiceImpl implements IProjectService{
 		}
 	}
 	
+	@Override
+    public boolean deleteProject(String projectId) {		
+    	boolean result = userMapper.deleteProject(projectId);
+		return result;
+    }
+    @Override
+    public boolean insertHistoryDiagnosis(String projectId, String userId, String path) {
+    	boolean result = userMapper.insertHistoryDiagnosis(projectId, userId, path);
+		return result;
+    }
+    
 	@Override
 	public Project getProjectById(String projectId) {
 		try {
@@ -90,8 +102,7 @@ public class ProjectServiceImpl implements IProjectService{
 				.projectMetaPackage(springProjectDto.getProjectMetaPackage())
 				.build();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-	
-		
+        
 		SpringProject projectEntity = modelMapper.map(springProjectDto, SpringProject.class);
 	    userMapper.insertSpringProject(projectEntity);
 	

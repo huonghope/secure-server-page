@@ -23,6 +23,6 @@ RUN chmod -R 777 ZAP_2.9.0
 RUN chmod 777 /entrypoint.sh
 
 # set port
-EXPOSE 8080 8081
+EXPOSE 8080
 
 CMD /ZAP_2.9.0/zap.sh -daemon -host 0.0.0.0 -config api.key=3343 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true

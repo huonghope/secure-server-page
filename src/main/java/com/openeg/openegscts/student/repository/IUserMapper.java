@@ -1,6 +1,9 @@
 package com.openeg.openegscts.student.repository;
 
+import com.openeg.openegscts.student.dto.ContainerDto;
 import com.openeg.openegscts.student.dto.UsersDto;
+import com.openeg.openegscts.student.entity.Container;
+import com.openeg.openegscts.student.entity.OwaspContainer;
 import com.openeg.openegscts.student.entity.Project;
 import com.openeg.openegscts.student.entity.ProjectDiagnosis;
 import com.openeg.openegscts.student.entity.SolvedCode;
@@ -37,4 +40,13 @@ public interface IUserMapper {
     List<Project> checkProjectName(String project);
     Project getProjectById(String projectId);
     List<ProjectDiagnosis> getProjectDiagnosis(String userId);
+
+    void insertContainer(Container container);
+    Container getUserContainer(String userId);
+    void stopContainer(String containerName);
+    void startContainer(String containerName);
+    void updateContainerForProjectId(String projectId, String containerName);
+    
+    OwaspContainer getUserOwaspContainer(String containerName);
+    void insertOwaspContainer(OwaspContainer owaspcontainer);
 }

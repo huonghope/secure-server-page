@@ -13,5 +13,7 @@ public interface IProjectService {
 	List<Project> getMyProjects(String userId);
 	Project getProjectById(String projectId);
 	
+	boolean deleteProject(String projectId);
+    boolean insertHistoryDiagnosis(String projectId, String userId, String path);
 	boolean checkExistsProjectName(String projectName);
 }

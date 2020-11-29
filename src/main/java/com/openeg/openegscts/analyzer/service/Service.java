@@ -13,7 +13,7 @@ import org.zaproxy.clientapi.core.ClientApiException;
 public class Service {
 
     private static final String ZAP_ADDRESS = "210.94.194.70"; //210.94.194.81
-    private static final int ZAP_PORT = 8081; //
+    private static int ZAP_PORT; //
     
     // Change to match the API key set in ZAP, or use NULL if the API key is disabled
     private static final String ZAP_API_KEY = "3343";
@@ -21,8 +21,9 @@ public class Service {
     // The URL of the application to be tested
     private static String TARGET = "https://public-firing-range.appspot.com";  //default target
     
-    public static String runActiveScanRules(String url, String resultType)
+    public static String runActiveScanRules(String url, String resultType, int port)
     {
+    	ZAP_PORT = port;
     	ClientApi api = new ClientApi(ZAP_ADDRESS, ZAP_PORT, ZAP_API_KEY);
     	TARGET = url;
     	String result = new String("");

@@ -1,10 +1,15 @@
 package com.openeg.openegscts.student.service;
 
+import com.openeg.openegscts.student.dto.ContainerDto;
+import com.openeg.openegscts.student.dto.OwaspContainerDto;
 import com.openeg.openegscts.student.dto.UsersDto;
+import com.openeg.openegscts.student.entity.Container;
+import com.openeg.openegscts.student.entity.OwaspContainer;
 import com.openeg.openegscts.student.entity.ProjectDiagnosis;
 import com.openeg.openegscts.student.entity.SolvedCode;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface IUsersService extends UserDetailsService {
@@ -23,7 +28,16 @@ public interface IUsersService extends UserDetailsService {
     UsersDto updateUser(UsersDto usersDto);
     List<SolvedCode> getSolvedCode(String userId);
     
-    boolean deleteProject(String projectId);
-    boolean insertHistoryDiagnosis(String projectId, String userId, String path);
+    
     List<ProjectDiagnosis> getProjectDiagnosis(String projectId);
+    
+    Container getUserContainer(String userId);
+	ContainerDto insertUserContainer(ContainerDto containerDto);
+	boolean stopContainer(Container container) throws IOException, InterruptedException;
+	boolean startContainer(Container container)  throws IOException, InterruptedException;
+	boolean updateContainerForProjectId(String projectId, String containerName);
+	
+	OwaspContainer getUserOwaspContainer(String containerName);
+	OwaspContainerDto insertUserOwaspContainer(OwaspContainerDto owaspcontainerDto);
+	
 }

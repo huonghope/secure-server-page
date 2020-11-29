@@ -143,4 +143,42 @@
         from project_tb p
         where p.project_name=#{projectName}
     </select>
+     <select id="getUserContainer" resultType="com.openeg.openegscts.student.entity.Container" parameterType="string">
+        select uc.project_id as containerId,
+        uc.user_id as userId,
+        uc.project_id as projectId,
+        uc.container_name as containerName,
+        uc.vscode_port as vscodePort,
+        uc.node_port as nodePort,
+        uc.java_port as javaPort,
+        uc.python_port as pythonPort,
+        uc.state as state,
+        uc.container_created as containerCreated
+        from user_container as uc
+        where uc.user_id=#{userId}
+    </select>
+     <insert id="insertContainer"  >
+        insert into user_container(containerid, project_id, user_id, container_name, vscode_port, node_port, java_port, python_port, state) values(#{containerId}, #{projectId}, #{userId}, #{containerName} ,#{vscodePort},#{nodePort}, #{javaPort}, #{pythonPort}, #{state}) 
+    </insert>
+    <update id="stopContainer"  >
+        update user_container set state = 0 where container_name = #{containerName} 
+    </update>
+    <update id="startContainer"  >
+        update user_container set state = 1 where container_name = #{containerName} 
+    </update>
+    <update id="updateContainerForProjectId"  >
+        update user_container set project_id = #{projectId} where container_name = #{containerName} 
+    </update>
+    <select id="getUserOwaspContainer" resultType="com.openeg.openegscts.student.entity.OwaspContainer" parameterType="string">
+        select oc.containerid as containerId,
+        oc.user_id as userId,
+        oc.container_name as containerName,
+        oc.container_port as containerPort,
+  		oc.container_created as containerCreated
+        from owasp_container as oc
+        where oc.container_name=#{containerName}
+    </select>
+    <insert id="insertOwaspContainer"  >
+        insert into owasp_container(containerid, container_port, user_id, container_name) values(#{containerId}, #{containerPort}, #{userId}, #{containerName}) 
+    </insert>
 </mapper>

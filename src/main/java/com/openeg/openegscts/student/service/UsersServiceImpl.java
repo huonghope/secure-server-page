@@ -1,9 +1,15 @@
 package com.openeg.openegscts.student.service;
 
+import com.openeg.openegscts.student.entity.Container;
+import com.openeg.openegscts.student.entity.OwaspContainer;
+import com.openeg.openegscts.student.entity.Project;
 import com.openeg.openegscts.student.entity.ProjectDiagnosis;
 import com.openeg.openegscts.student.entity.SolvedCode;
 import com.openeg.openegscts.student.entity.Users;
 import com.openeg.openegscts.student.repository.IUserMapper;
+import com.openeg.openegscts.student.dto.ContainerDto;
+import com.openeg.openegscts.student.dto.OwaspContainerDto;
+import com.openeg.openegscts.student.dto.ProjectDto;
 import com.openeg.openegscts.student.dto.UsersDto;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -15,6 +21,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -245,20 +254,150 @@ public class UsersServiceImpl implements IUsersService {
         return new ModelMapper().map(userEntity, UsersDto.class);
     }
 
-    @Override
-    public boolean deleteProject(String projectId) {
-    	boolean result = mapper.deleteProject(projectId);
-		return result;
-    }
-    @Override
-    public boolean insertHistoryDiagnosis(String projectId, String userId, String path) {
-    	boolean result = mapper.insertHistoryDiagnosis(projectId, userId, path);
-		return result;
-    }
-
 	@Override
 	public List<ProjectDiagnosis> getProjectDiagnosis(String projectId) {
 		 List<ProjectDiagnosis> listDiagnosis = mapper.getProjectDiagnosis(projectId);
 		return listDiagnosis;
+	}
+
+	@Override
+	public Container getUserContainer(String userId) {
+		Container container = mapper.getUserContainer(userId);
+		return container;
+	}
+
+	@Override
+	public ContainerDto insertUserContainer(ContainerDto containerDto) {
+		// TODO Auto-generated method stub
+		//프로젝트 경로 == 프로젝트 이름
+		containerDto = ContainerDto.builder()
+					.containerId(UUID.randomUUID().toString())
+					.projectId(containerDto.getProjectId())
+	                .userId(containerDto.getUserId())
+	                .containerName(containerDto.getContainerName())
+	                .vscodePort(containerDto.getVscodePort())
+	                .nodePort(containerDto.getNodePort())
+	                .javaPort(containerDto.getJavaPort())
+	                .pythonPort(containerDto.getPythonPort())
+	                .state(containerDto.getState())
+	                .build();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+	
+		Container containerEntity = modelMapper.map(containerDto, Container.class);
+		mapper.insertContainer(containerEntity);
+	
+	    ContainerDto returnValue = modelMapper.map(containerEntity, ContainerDto.class);
+	    return returnValue;
+	}
+
+	@Override
+	public boolean stopContainer(Container container) throws IOException, InterruptedException {
+		// TODO Auto-generated method stub
+		boolean checkSucc = false;
+		try {
+			String cmd = "docker ps";
+			Process process = Runtime.getRuntime().exec(cmd); 
+			process.waitFor(); 
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line = "";
+			//생성된 컨테이너 확인
+			while ((line = reader.readLine()) != null) {
+				if(line.contains(container.getContainerName())) {
+					cmd = "docker stop " + container.getContainerName();
+					Runtime.getRuntime().exec(cmd);
+					
+					mapper.stopContainer(container.getContainerName());
+					checkSucc = true;
+					break;
+				}
+			}
+			return checkSucc;
+		} catch (Exception e) {
+			System.out.println(e);
+			return checkSucc;
+			// TODO: handle exception
+		}
+	}
+	@Override
+	public boolean startContainer(Container container) throws IOException, InterruptedException {
+		String cmd = "docker ps --filter \"status=exited\"";
+		Process process = Runtime.getRuntime().exec(cmd); 
+		process.waitFor(); 
+	    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+	    String line = "";
+	    boolean checkSucc = false;
+	    //생성된 컨테이너 확인
+	    while ((line = reader.readLine()) != null) {
+	    	if(line.contains(container.getContainerName())) {
+	    		//컨테이너 다시 시작함
+	    		cmd = "docker start " + container.getContainerName();
+	    		Runtime.getRuntime().exec(cmd);
+	    		process.waitFor(); 
+	    		Thread.sleep(2000);
+	    		
+	    		
+	    		//컨테이너 정상적으로 올리는지 한번 다식 확인함
+	    		cmd = "docker ps";
+	    		process = Runtime.getRuntime().exec(cmd); 
+	    		process.waitFor(); 
+	    	    reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+	    	    line = "";
+	    	    while ((line = reader.readLine()) != null) {    	
+	    	    	if(line.contains(container.getContainerName())) {
+	    	    		checkSucc = true;
+	    	    		mapper.startContainer(container.getContainerName());	    	    	
+	    	    		break;
+	    	    	}
+	    	    }
+	    	}
+	    }
+		return checkSucc;
+	}
+
+	@Override
+	public boolean updateContainerForProjectId(String projectId, String containerName) {
+		boolean result = false;
+		try {
+			mapper.updateContainerForProjectId(projectId, containerName);
+			result = true;
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.out.println(e);
+			return result;
+		}
+		return result;
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public OwaspContainer getUserOwaspContainer(String containerName) {
+		try {
+			OwaspContainer owaspcontainer = mapper.getUserOwaspContainer(containerName);
+			// TODO Auto-generated method stub
+			return owaspcontainer;
+		}catch (Exception e) {
+			System.out.println(e);
+			// TODO: handle exception
+		}
+		return null;
+	}
+
+	@Override
+	public OwaspContainerDto insertUserOwaspContainer(OwaspContainerDto owaspcontainerDto) {
+		// TODO Auto-generated method stub
+		//프로젝트 경로 == 프로젝트 이름
+		owaspcontainerDto = OwaspContainerDto.builder()
+					.containerId(UUID.randomUUID().toString())
+					.containerPort(owaspcontainerDto.getContainerPort())
+	                .userId(owaspcontainerDto.getUserId())
+	                .containerName(owaspcontainerDto.getContainerName())
+	                .build();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+	
+		OwaspContainer containerEntity = modelMapper.map(owaspcontainerDto, OwaspContainer.class);
+		mapper.insertOwaspContainer(containerEntity);
+	
+		OwaspContainerDto returnValue = modelMapper.map(containerEntity, OwaspContainerDto.class);
+	    return returnValue;
 	}
 }
