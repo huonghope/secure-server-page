@@ -37,7 +37,7 @@ public interface IUserMapper {
     
     boolean deleteProject(String projectId);
     boolean insertHistoryDiagnosis(String projectId, String userId, String path);
-    List<Project> checkProjectName(String project);
+    List<Project> checkProjectName(String projectName, String userId);
     Project getProjectById(String projectId);
     List<ProjectDiagnosis> getProjectDiagnosis(String userId);
 

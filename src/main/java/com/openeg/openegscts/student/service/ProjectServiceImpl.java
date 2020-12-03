@@ -3,6 +3,7 @@ package com.openeg.openegscts.student.service;
 import java.io.File;
 import java.util.List;
 import java.util.UUID;
+import javax.swing.SpinnerDateModel;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,13 +98,16 @@ public class ProjectServiceImpl implements IProjectService{
 				.projectBuildType(springProjectDto.getProjectBuildType())
 				.projectLanguage(springProjectDto.getProjectLanguage())
 				.projectSpringBootVer(springProjectDto.getProjectSpringBootVer())
-				.projectMetaGroup(springProjectDto.getProjectMetaGroup())
+				.projectMetaGroupId(springProjectDto.getProjectMetaGroupId())
+				.projectMetaArtifactId(springProjectDto.getProjectMetaArtifactId())
 				.projectMetaDesc(springProjectDto.getProjectMetaDesc())
 				.projectMetaPackage(springProjectDto.getProjectMetaPackage())
+				.projectDependencies(springProjectDto.getProjectDependencies())
 				.build();
 		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         
 		SpringProject projectEntity = modelMapper.map(springProjectDto, SpringProject.class);
+		
 	    userMapper.insertSpringProject(projectEntity);
 	
 	    SpringProjectDto returnValue = modelMapper.map(projectEntity, SpringProjectDto.class);
@@ -111,8 +115,9 @@ public class ProjectServiceImpl implements IProjectService{
 	}
 	
 	@Override
-	public boolean checkExistsProjectName(String projectName) {
-		List<Project> result = userMapper.checkProjectName(projectName);
+	public boolean checkExistsProjectName(String projectName, String userId) {
+		System.out.println(projectName + userId);
+		List<Project> result = userMapper.checkProjectName(projectName, userId);
 		if(result.size() == 0) {
 			return false;
 		}

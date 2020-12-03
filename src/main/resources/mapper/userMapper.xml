@@ -90,8 +90,8 @@
     </insert>
      <insert id="insertSpringProject" parameterType="com.openeg.openegscts.student.entity.Users" >
         insert ignore into project_tb(project_id, user_id, project_name, project_type, project_path) values(#{projectId}, #{projectUserId}, #{projectName}, #{projectType} , #{projectPath});
-        insert ignore into project_tb_spring(id, project_id, project_build_type, project_language, project_spring_boot_ver, project_meta_group, project_meta_desc, project_meta_package) 
-        values(#{projectSpringId}, #{projectId}, #{projectBuildType}, #{projectLanguage}, #{projectSpringBootVer}, #{projectMetaGroup}, #{projectMetaDesc}, #{projectMetaPackage})
+        insert ignore into project_tb_spring(id, project_id, project_build_type, project_language, project_spring_boot_ver, project_meta_groupId, project_meta_artifactId, project_meta_desc, project_meta_package, project_dependencies) 
+        values(#{projectSpringId}, #{projectId}, #{projectBuildType}, #{projectLanguage}, #{projectSpringBootVer}, #{projectMetaGroupId}, #{projectMetaArtifactId}, #{projectMetaDesc}, #{projectMetaPackage}, #{projectDependencies})
     </insert>
     <select id="getMyProjects" resultType="com.openeg.openegscts.student.entity.Project" parameterType="string">
         select p.project_id as projectId,
@@ -135,13 +135,13 @@
     </select>
      <select id="checkProjectName" resultType="com.openeg.openegscts.student.entity.Project" parameterType="string">
         select p.project_id as projectId,
-        p.user_id as userId,
+        p.user_id as projectUserId,
         p.project_name as projectName,
         p.project_type as projectType,
         p.project_created as projectCreated,
         p.project_path as projectPath
         from project_tb p
-        where p.project_name=#{projectName}
+        where p.project_name=#{projectName} and p.user_id=#{userId}
     </select>
      <select id="getUserContainer" resultType="com.openeg.openegscts.student.entity.Container" parameterType="string">
         select uc.project_id as containerId,

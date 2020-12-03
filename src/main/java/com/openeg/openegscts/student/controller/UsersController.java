@@ -220,6 +220,8 @@ public class UsersController {
     public ResponseEntity<String> createSpringProject(@RequestBody CreateSpringProject createSpringProject)
     {
 		SpringProjectDto createSpringProjectDto = modelMapper.map(createSpringProject, SpringProjectDto.class);
+		
+		System.out.println("control" + createSpringProject);
 		SpringProjectDto createProjectDto = projectService.createSpringProject(createSpringProjectDto);
 		UsersDto usersDto = service.getUserById(createProjectDto.getProjectUserId());
 		
@@ -313,18 +315,17 @@ public class UsersController {
     		 return ResponseEntity.status(HttpStatus.CREATED).body("fail");   
     	 }
     }
-    //프로젝트 출력함
-    @GetMapping("/checkExistsProjectName/{projectName}")
-    public ResponseEntity<String> checkExistsProjectName(@PathVariable String projectName)
+ 
+    @GetMapping("/checkExistsProjectName/{userId}/{projectName}")
+    public ResponseEntity<String> checkExistsProjectName(@PathVariable String projectName, @PathVariable String userId)
     {
-    	boolean returnValue = projectService.checkExistsProjectName(projectName);
+    	boolean returnValue = projectService.checkExistsProjectName(projectName, userId);
 	    if(returnValue != false) {
             return ResponseEntity.status(HttpStatus.CREATED).body("exists");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body("no-exists");
     }
-    
-    //프로젝트 출력함
+   
     @GetMapping("/container/{userId}")
     public ResponseEntity<Container> getUserContainer(@PathVariable String userId) throws IOException
     {

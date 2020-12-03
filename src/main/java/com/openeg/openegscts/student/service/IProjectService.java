@@ -15,5 +15,5 @@ public interface IProjectService {
 	
 	boolean deleteProject(String projectId);
     boolean insertHistoryDiagnosis(String projectId, String userId, String path);
-	boolean checkExistsProjectName(String projectName);
+	boolean checkExistsProjectName(String projectName, String userId);
 }

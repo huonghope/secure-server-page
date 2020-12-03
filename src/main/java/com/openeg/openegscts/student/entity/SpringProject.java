@@ -27,8 +27,10 @@ public class SpringProject {
 	private String projectBuildType;
 	private String projectLanguage;
 	private String projectSpringBootVer;
-	private String projectMetaGroup;
+	private String projectMetaGroupId;
+	private String projectMetaArtifactId;
 	private String projectMetaDesc;
 	private String projectMetaPackage;
+	private String projectDependencies;
 	
 }
