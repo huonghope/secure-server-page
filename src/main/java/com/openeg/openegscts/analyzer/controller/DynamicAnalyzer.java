@@ -11,6 +11,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Scanner;
@@ -20,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -28,13 +31,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Ports;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DefaultDockerClientConfig.Builder;
 import com.openeg.openegscts.analyzer.service.Service;
 import com.openeg.openegscts.file.FileSaveC;
-import com.openeg.openegscts.student.dto.ContainerDto;
+import com.openeg.openegscts.student.dto.UserContainerDto;
 import com.openeg.openegscts.student.dto.OwaspContainerDto;
 import com.openeg.openegscts.student.dto.ProjectDiagnosisDto;
 import com.openeg.openegscts.student.dto.UsersDto;
-import com.openeg.openegscts.student.entity.Container;
+import com.openeg.openegscts.student.entity.UserContainer;
 import com.openeg.openegscts.student.entity.OwaspContainer;
 import com.openeg.openegscts.student.entity.Project;
 import com.openeg.openegscts.student.entity.ProjectDiagnosis;
@@ -50,13 +61,22 @@ public class DynamicAnalyzer {
 	 IUsersService service;
 	 FileSaveC fileSave;
 	 IProjectService projectService;
+	 Environment env;
 	 ModelMapper modelMapper = new ModelMapper();
 	 
+	 //개발환경 맞게 수정필요함
+	 Builder configBuilder = new DefaultDockerClientConfig.Builder()
+		        .withDockerTlsVerify(false)
+		        .withDockerHost("tcp://localhost:2375");
+
+     DockerClient dockerClient = DockerClientBuilder.getInstance(configBuilder).build();
+	 
 	@Autowired
-    public DynamicAnalyzer(IUsersService service, IProjectService projectService, FileSaveC fileSave) {
+    public DynamicAnalyzer(IUsersService service, IProjectService projectService, FileSaveC fileSave, Environment env) {
         this.fileSave = fileSave;
         this.service = service;
         this.projectService = projectService;
+        this.env = env;
     }
 	
 	@RequestMapping("/dynamic-analyzer")
@@ -67,14 +87,13 @@ public class DynamicAnalyzer {
 		try {
 			String userId = dynamicAnalyzerModel.getUserId();
 			String projectId = dynamicAnalyzerModel.getProjectId();			
-			String option = dynamicAnalyzerModel.getOption();
 			String typeReport = dynamicAnalyzerModel.getTypereport();
 			
 			
 			String result = "";
 			Project project = projectService.getProjectById(projectId);
 			
-			Container container = service.getUserContainer(userId);
+			UserContainer container = service.getUserContainer(userId);
 			
 			//프로젝트 타입 및 해당하는 유저의 Container를 받아서 링크를 출력함
 			String projectType = project.getProjectType();
@@ -93,95 +112,84 @@ public class DynamicAnalyzer {
 				default:
 					break;
 			}
-	    	
-			String checkUrl = "http://210.94.194.70:" + Integer.toString(port);
-			
+			String checkUrl = env.getProperty("ip.addr").toString() + ":" + Integer.toString(port);
 			//출력되는 링크를 유호하지 않을 링크인지 체크함
 	    	URL url = new URL(checkUrl);
 	    	try {
 	    		HttpURLConnection huc = (HttpURLConnection) url.openConnection();
 	    		int responseCode = huc.getResponseCode();
 	    		
+	    		UsersDto usersDto = service.getUserById(userId);
+	    		String userName = usersDto.getName();
 	    		//해당하는 페이지를 접근 가능하는지 체크함
 	    		if(responseCode == 200) {
-	    			UsersDto usersDto = service.getUserById(userId);
 	    			String containerName = "owasp_" + usersDto.getName();
 	    			OwaspContainer owaspcontainer = service.getUserOwaspContainer(containerName);
+	    			int owaspContainerPort = 5555;
+	    			
 	    			
 	    			//해당하는 유저는 Owasp docker를 가지고 있는지 아닌지 체크함
-	    			//존제하지 않으면 Docker Cmd를 실행하고 Container를 올리고  정보를 디비에서 저장함
-	    			Process process;
-	    			if(owaspcontainer == null) {
-		    			String cmd = "docker run -d"
-		    					+ " -p " + "3030" +":8080"
-		    					+ " --name " + "owasp_" + usersDto.getName()
-		    					+ " owaspzap:latest";
-		    			process = Runtime.getRuntime().exec(cmd); 
-		    			process.waitFor();
-		    			System.out.println(cmd);
-		    			
-		    			OwaspContainerDto owasp = new OwaspContainerDto(usersDto.getUserId(), "owasp_" + usersDto.getName(), 3030);
-		    			
-		    			owaspcontainer = modelMapper.map(owasp, OwaspContainer.class);
-		    			service.insertUserOwaspContainer(owasp);
-		    			Thread.sleep(2000);
+	    			//존제하지 않으면 Docker SDK를 실행하고 Container를 올리고  정보를 디비에서 저장함
+	    			//만약에 있으면 restart
+	    			if(owaspcontainer == null) {			
+	    				ExposedPort expose = ExposedPort.tcp(8080); 
+	    				Ports portBindings = new Ports();
+	    				portBindings.bind(expose, Ports.Binding.bindPort(owaspContainerPort));
+	    				
+	    				CreateContainerResponse ctn = dockerClient.createContainerCmd("owaspzap:latest")
+    						.withName("owasp_" + userName)
+    			           	.withExposedPorts(expose)
+    			            .withPortBindings(portBindings).exec();
+	    				
+	    				dockerClient.startContainerCmd(ctn.getId()).exec();
+	    				Thread.sleep(4000);
+	    				//컨테이너 정상적으로 생성함
+	    				if(ctn.getId() != null) {
+	    					OwaspContainerDto owasp = new OwaspContainerDto(ctn.getId(), usersDto.getUserId(), "owasp_" + userName, owaspContainerPort);
+	    					owaspcontainer = modelMapper.map(owasp, OwaspContainer.class);
+	    					service.insertUserOwaspContainer(owasp);
+	    				}
 	    			}else {
-	    				String cmd = "docker restart "+ owaspcontainer.getContainerName();
-		    			process = Runtime.getRuntime().exec(cmd); 
-		    			process.waitFor();
-		    			Thread.sleep(1000);
+	    				dockerClient.restartContainerCmd(owaspcontainer.getContainerId());
+		    			Thread.sleep(4000);
 	    			}
 	    			
-	    			//컨테이너 정상적으로 올리는지 한번 다식 확인함
-	    			String cmd = "docker ps";
-		    		process = Runtime.getRuntime().exec(cmd); 
-		    		process.waitFor(); 
-		    		BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-		    	    String line = "";
-		    	    boolean checkSucc = false;
-		    	    while ((line = reader.readLine()) != null) {    	
-		    	    	if(line.contains("owasp_" + usersDto.getName())) {
-		    	    		Thread.sleep(1000);
-		    	    		System.out.println("진단중...");
-		    	    		//그렇지 않으면 전달한 URL를 진단 클래스를 전달해서 진단함
-			    			Service zapapi = new Service();
-				    		
-				    		// 해당하는 프로젝트 Id를 부터 url를 출력해서 밑에 target로 바꿔주시면 됩니다.
-			    			// URL, typeReport, 및 Owasp-Container 포트를 전달함
-				    		result = Service.runActiveScanRules(checkUrl, typeReport, 3030);
-				    		
-				    		
-				    		//출력된 결과를 json 파일을 저장함
-				    		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-				    		LocalDateTime now = LocalDateTime.now();
-				    		String fileName = dtf.format(now);
-				    		
-				    		projectService.insertHistoryDiagnosis(projectId, userId, fileName);
-				    		writeFile(project.getProjectUserId(), project.getProjectPath(),fileName, result);				    		  	    	
-				    		checkSucc = true;
-		    	    		break;
-		    	    	}
-		    	    }
-		    	    if(checkSucc)
-		    	    	return ResponseEntity.status(HttpStatus.CREATED).body(result);
-		    	    else {
-		    	    	System.out.println("진단 실패함");
-		    	    	return ResponseEntity.status(HttpStatus.CREATED).body("fail");
-		    	    }
-	    		
+	    			
+	    			Collection<String> ctnName = new ArrayList<String>() {{ add("/owasp_"+ userName); }};
+	     			List<Container> containers = dockerClient.listContainersCmd()
+	     					  .withShowAll(true)
+	     					  .withNameFilter(ctnName)
+	     					  .exec();
+	     			
+	     			//컨테이너 정상적으로 올림
+	     			if(containers.size() != 0 && !containers.get(0).getId().equals("")) {
+	     				Service zapapi = new Service();
+	     				result = Service.runActiveScanRules(checkUrl, typeReport, owaspContainerPort);
+	     				
+	     				//출력된 결과를 json 파일을 저장함
+			    		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+			    		LocalDateTime now = LocalDateTime.now();
+			    		String fileName = dtf.format(now);
+			    		
+			    		projectService.insertHistoryDiagnosis(projectId, userId, fileName);
+			    		writeFile(project.getProjectUserId(), project.getProjectPath(),fileName, result);				    		  	    	
+			    			
+			    		return ResponseEntity.status(HttpStatus.CREATED).body(result);
+	    			}else {
+	    				return ResponseEntity.status(HttpStatus.CREATED).body("fail");
+	    			}
 	    		}else {
 	    			System.out.println("URL 접근 오류");
 	    			return ResponseEntity.status(HttpStatus.CREATED).body("fail");
 	    		}
 				
 			} catch (Exception e) {
-				System.out.println("URL 접근 오류" + e);
+				System.out.println("진단 과정이 실패" + e);
 				return ResponseEntity.status(HttpStatus.CREATED).body("fail");
 			}
 		} catch (Exception e) {
 			 System.out.println("프로젝트 진단 오류" + e);
 			 return ResponseEntity.status(HttpStatus.CREATED).body("fail");
-			// TODO: handle exception
 		}
 	}
 	@RequestMapping("/result_dynamic-analyzers")
@@ -209,8 +217,8 @@ public class DynamicAnalyzer {
            return ResponseEntity.status(HttpStatus.CREATED).body(listDiagnosis);
 			
 		} catch (Exception e) {
-			 System.out.println("프로젝트 진단 오류" + e);
-			 return ResponseEntity.status(HttpStatus.CREATED).body("failed");
+			 System.out.println("프로젝트 진단 History" + e);
+			 return ResponseEntity.status(HttpStatus.CREATED).body("fail");
 			// TODO: handle exception
 		}
 	}
@@ -220,7 +228,6 @@ public class DynamicAnalyzer {
 	      String data = "";
 	      while (myReader.hasNextLine()) {
 	        data += myReader.nextLine();
-	        System.out.println(data);
 	      }
 	      myReader.close();
 	      return data;

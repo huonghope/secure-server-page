@@ -1,9 +1,9 @@
 package com.openeg.openegscts.student.service;
 
-import com.openeg.openegscts.student.dto.ContainerDto;
+import com.openeg.openegscts.student.dto.UserContainerDto;
 import com.openeg.openegscts.student.dto.OwaspContainerDto;
 import com.openeg.openegscts.student.dto.UsersDto;
-import com.openeg.openegscts.student.entity.Container;
+import com.openeg.openegscts.student.entity.UserContainer;
 import com.openeg.openegscts.student.entity.OwaspContainer;
 import com.openeg.openegscts.student.entity.ProjectDiagnosis;
 import com.openeg.openegscts.student.entity.SolvedCode;
@@ -31,10 +31,11 @@ public interface IUsersService extends UserDetailsService {
     
     List<ProjectDiagnosis> getProjectDiagnosis(String projectId);
     
-    Container getUserContainer(String userId);
-	ContainerDto insertUserContainer(ContainerDto containerDto);
-	boolean stopContainer(Container container) throws IOException, InterruptedException;
-	boolean startContainer(Container container)  throws IOException, InterruptedException;
+    UserContainer getUserContainer(String userId);
+	UserContainerDto insertUserContainer(UserContainerDto containerDto);
+	UserContainer createUserContainer(String userId);
+	boolean stopContainer(UserContainer container) throws IOException, InterruptedException;
+	boolean startContainer(UserContainer container)  throws IOException, InterruptedException;
 	boolean updateContainerForProjectId(String projectId, String containerName);
 	
 	OwaspContainer getUserOwaspContainer(String containerName);

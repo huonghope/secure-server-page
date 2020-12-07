@@ -84,5 +84,101 @@
     <update id="updateUser" parameterType="com.openeg.openegscts.student.entity.Users">
         update user_tb set name=#{name}, password=#{password} where user_id=#{userId}
     </update>
-
+    
+    <insert id="insertProject" parameterType="com.openeg.openegscts.student.entity.Users" >
+        insert ignore into project_tb(project_id, user_id, project_name, project_type, project_path) values(#{projectId}, #{projectUserId}, #{projectName}, #{projectType}, #{projectPath}) 
+    </insert>
+     <insert id="insertSpringProject" parameterType="com.openeg.openegscts.student.entity.Users" >
+        insert ignore into project_tb(project_id, user_id, project_name, project_type, project_path) values(#{projectId}, #{projectUserId}, #{projectName}, #{projectType} , #{projectPath});
+        insert ignore into project_tb_spring(id, project_id, project_build_type, project_language, project_spring_boot_ver, project_meta_groupId, project_meta_artifactId, project_meta_desc, project_meta_package, project_dependencies) 
+        values(#{projectSpringId}, #{projectId}, #{projectBuildType}, #{projectLanguage}, #{projectSpringBootVer}, #{projectMetaGroupId}, #{projectMetaArtifactId}, #{projectMetaDesc}, #{projectMetaPackage}, #{projectDependencies})
+    </insert>
+    <select id="getMyProjects" resultType="com.openeg.openegscts.student.entity.Project" parameterType="string">
+        select p.project_id as projectId,
+        p.user_id as userId,
+        p.project_name as projectName,
+        p.project_type as projectType,
+        p.project_created as projectCreated,
+        p.project_path as projectPath
+        from project_tb p
+        where user_id=#{userId}
+        order by project_created asc
+    </select>
+     <select id="getProjectById" resultType="com.openeg.openegscts.student.entity.Project" parameterType="string">
+       select p.project_id as projectId,
+       p.user_id as projectUserId,
+       p.project_name as projectName,
+       p.project_type as projectType,
+       p.project_created as projectCreated,
+       p.project_path as projectPath
+       from project_tb p
+       where p.project_id=#{projectId}
+       order by project_created asc
+   </select>
+    
+    <insert id="insertHistoryDiagnosis"  >
+        insert into project_diagnosis(project_id, user_id, path, result) values(#{projectId}, #{userId}, #{path}, #{path}) 
+    </insert>
+    <delete id="deleteProject" parameterType="string">
+       delete from project_tb where project_id=#{projectId};
+       delete from project_tb_spring where project_id=#{projectId}
+    </delete>
+    
+    <select id="getProjectDiagnosis" resultType="com.openeg.openegscts.student.entity.ProjectDiagnosis" parameterType="string">
+        select pg.project_id as projectId,
+        pg.user_id as userId,
+        pg.path as path,
+        pg.time as time,
+        pg.result as result
+        from project_diagnosis as pg
+        where pg.project_id=#{projectId}
+    </select>
+     <select id="checkProjectName" resultType="com.openeg.openegscts.student.entity.Project" parameterType="string">
+        select p.project_id as projectId,
+        p.user_id as projectUserId,
+        p.project_name as projectName,
+        p.project_type as projectType,
+        p.project_created as projectCreated,
+        p.project_path as projectPath
+        from project_tb p
+        where p.project_name=#{projectName} and p.user_id=#{userId}
+    </select>
+     <select id="getUserContainer" resultType="com.openeg.openegscts.student.entity.Container" parameterType="string">
+        select uc.project_id as containerId,
+        uc.user_id as userId,
+        uc.project_id as projectId,
+        uc.container_name as containerName,
+        uc.vscode_port as vscodePort,
+        uc.node_port as nodePort,
+        uc.java_port as javaPort,
+        uc.python_port as pythonPort,
+        uc.state as state,
+        uc.container_created as containerCreated
+        from user_container as uc
+        where uc.user_id=#{userId}
+    </select>
+     <insert id="insertContainer"  >
+        insert into user_container(containerid, project_id, user_id, container_name, vscode_port, node_port, java_port, python_port, state) values(#{containerId}, #{projectId}, #{userId}, #{containerName} ,#{vscodePort},#{nodePort}, #{javaPort}, #{pythonPort}, #{state}) 
+    </insert>
+    <update id="stopContainer"  >
+        update user_container set state = 0 where container_name = #{containerName} 
+    </update>
+    <update id="startContainer"  >
+        update user_container set state = 1 where container_name = #{containerName} 
+    </update>
+    <update id="updateContainerForProjectId"  >
+        update user_container set project_id = #{projectId} where container_name = #{containerName} 
+    </update>
+    <select id="getUserOwaspContainer" resultType="com.openeg.openegscts.student.entity.OwaspContainer" parameterType="string">
+        select oc.containerid as containerId,
+        oc.user_id as userId,
+        oc.container_name as containerName,
+        oc.container_port as containerPort,
+  		oc.container_created as containerCreated
+        from owasp_container as oc
+        where oc.container_name=#{containerName}
+    </select>
+    <insert id="insertOwaspContainer"  >
+        insert into owasp_container(containerid, container_port, user_id, container_name) values(#{containerId}, #{containerPort}, #{userId}, #{containerName}) 
+    </insert>
 </mapper>

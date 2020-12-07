@@ -143,8 +143,8 @@
         from project_tb p
         where p.project_name=#{projectName} and p.user_id=#{userId}
     </select>
-     <select id="getUserContainer" resultType="com.openeg.openegscts.student.entity.Container" parameterType="string">
-        select uc.project_id as containerId,
+     <select id="getUserContainer" resultType="com.openeg.openegscts.student.entity.UserContainer" parameterType="string">
+        select uc.containerid as containerId,
         uc.user_id as userId,
         uc.project_id as projectId,
         uc.container_name as containerName,

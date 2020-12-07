@@ -1,6 +1,6 @@
 package com.openeg.openegscts.student.controller;
 
-import com.openeg.openegscts.student.entity.Container;
+import com.openeg.openegscts.student.entity.UserContainer;
 import com.openeg.openegscts.student.entity.Project;
 import com.openeg.openegscts.student.entity.SecurityCode;
 import com.openeg.openegscts.student.entity.SolvedCode;
@@ -13,7 +13,7 @@ import com.openeg.openegscts.student.model.LoginRequestModel;
 import com.openeg.openegscts.student.model.UserInfoResponseModel;
 import com.openeg.openegscts.student.service.IProjectService;
 import com.openeg.openegscts.student.service.IUsersService;
-import com.openeg.openegscts.student.dto.ContainerDto;
+import com.openeg.openegscts.student.dto.UserContainerDto;
 import com.openeg.openegscts.student.dto.ProjectDto;
 import com.openeg.openegscts.student.dto.SecurityCodeDto;
 import com.openeg.openegscts.student.dto.SpringProjectDto;
@@ -21,6 +21,8 @@ import com.openeg.openegscts.student.dto.UsersDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.modelmapper.convention.MatchingStrategies;
@@ -56,7 +58,7 @@ public class UsersController {
     ModelMapper modelMapper = new ModelMapper();
 
     @Autowired
-    public UsersController(IUsersService service,IProjectService projectService,  Environment env) {
+    public UsersController(IUsersService service,IProjectService projectService, Environment env) {
         this.service = service;
         this.projectService = projectService;
         this.env = env;
@@ -189,7 +191,7 @@ public class UsersController {
         return null;
     }
 
-    //일발 프로잭트: Nodejs & Python
+    //일발 프로잭트 생성: Nodejs & Python
     @PostMapping("/projects")
     public ResponseEntity<String> createProject(@RequestBody CreateProject createProject)
     {
@@ -215,13 +217,11 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.CREATED).body("failed");
     }
     
-    //Spring 프로잭트: Spring Project
+    //Spring 프로잭트 생성: Spring Project
     @PostMapping("/springprojects")
     public ResponseEntity<String> createSpringProject(@RequestBody CreateSpringProject createSpringProject)
     {
 		SpringProjectDto createSpringProjectDto = modelMapper.map(createSpringProject, SpringProjectDto.class);
-		
-		System.out.println("control" + createSpringProject);
 		SpringProjectDto createProjectDto = projectService.createSpringProject(createSpringProjectDto);
 		UsersDto usersDto = service.getUserById(createProjectDto.getProjectUserId());
 		
@@ -242,18 +242,15 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.CREATED).body("failed");
     }
     
-    //프로젝트 출력함
+    //해당하는 유저 프로젝트 리스트 출력함
     @GetMapping("/projects/{userId}")
     public ResponseEntity<List<Project>> getListMyProjects(@PathVariable String userId)
     {
     	try {
     		List<Project> returnValue = new ArrayList<>();
     		returnValue = projectService.getMyProjects(userId);
-    		if(returnValue != null) {
-    			return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
-    		}
     		return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
-			
+    		
 		} catch (Exception e) {
 			// TODO: handle exception
 			System.out.println(e);
@@ -261,7 +258,7 @@ public class UsersController {
 		}
     }
     
-    //해당하는 프로젝트 출력함
+    //특정 프로젝트 출력함
     @GetMapping("/projects/{userId}/{projectId}")
     public ResponseEntity<Project> getProjectById(@PathVariable String userId, @PathVariable String projectId)
     {
@@ -279,9 +276,11 @@ public class UsersController {
     }
     //프로젝트 삭제
     @DeleteMapping("/projects/{userId}/{projectId}")
-    public ResponseEntity<String> deletProject(@PathVariable String userId, @PathVariable String projectId)
+    public ResponseEntity<String> deletProject(@PathVariable String userId, @PathVariable String projectId) throws IOException
     {
     	 Project project = projectService.getProjectById(projectId);
+    	 
+    	 //프로젝트 및 유저 ID 체크함
     	 if(project.getProjectUserId().equals(userId)) {
     		 
     		 boolean returnValue = projectService.deleteProject(projectId);
@@ -295,18 +294,12 @@ public class UsersController {
     			 service.updateContainerForProjectId(null, usersDto.getName()); 
     		 }
     		      	
-    		 //프로젝트 삭제
-    		 //!수정 필요합니다.
+    		 //프로젝트 퐆더 삭제
     		 File projectPath = new File("PROJECTS/" + usersDto.getName() +"/" + project.getProjectPath());
-    		 System.out.println(projectPath);
-    		 String[]entries = projectPath.list();
-    		 for(String s: entries){
-    		     File currentFile = new File(projectPath.getPath(),s);
-    		     currentFile.delete();
+    		 if(projectPath.exists()) {
+    			 FileUtils.deleteDirectory(projectPath);
     		 }
-    		 projectPath.delete();
-    			
-    		 
+
     		 if(returnValue) {
     			 return ResponseEntity.status(HttpStatus.CREATED).body("success");
     		 }
@@ -316,7 +309,8 @@ public class UsersController {
     	 }
     }
  
-    @GetMapping("/checkExistsProjectName/{userId}/{projectName}")
+    //만든 프로젝트 이름 체크
+    @GetMapping("/check-projectname/{userId}/{projectName}")
     public ResponseEntity<String> checkExistsProjectName(@PathVariable String projectName, @PathVariable String userId)
     {
     	boolean returnValue = projectService.checkExistsProjectName(projectName, userId);
@@ -326,120 +320,65 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.CREATED).body("no-exists");
     }
    
+    //컨테이너 출력 및 생성
+    //해당하는 유저의 Vs-code 컨네이너 한번 체크하고 만약에 없으면 생성해줌
     @GetMapping("/container/{userId}")
-    public ResponseEntity<Container> getUserContainer(@PathVariable String userId) throws IOException
+    public ResponseEntity<UserContainer> getUserContainer(@PathVariable String userId) throws IOException
     {
-    	Container container = service.getUserContainer(userId);
-    	
-    	//유저 ID를 받아서 유저의 Container를 출력함
-    	//해당하는 유저는 Container가 없으면 생성해줌
-    	//처음 한번 실행함
+    	UserContainer container = service.getUserContainer(userId);
     	if(container == null) {
     		try {
-    			// sh 파일을 통해서 Container를 올림
-    			/*
-    			# PORT mappping:
-				# $NODE_PORT:3000 node.js
-				# $PYTHON_PORT:8080 python
-				# $JAVA_PORT:10000 java
-				*/
-    			String osName = System.getProperty("os.name");
-    			String cmd = "";
-    			if(osName.contains("Windows"))
-    				cmd = "cmd /c .\\docker\\run-container.sh";
-    			else if(osName.contains("Linux"))
-    				cmd = ".\\docker\\run-container.sh";
-    			else
-    				System.out.println("unsupported OS");
-    		
-			   List<Project> listproject = new ArrayList<>();
-			   listproject = projectService.getMyProjects(userId);
-			   
-			   UsersDto usersDto = service.getUserById(userId);
-			   
-			   //Vscode, node, java, python - ports
-			   /*
-			    * @params:
-			    * PROJECTS: 모든 프로젝트를 저장하는 폴더
-			    * userName: 유저별로 프로젝트를 저장하는 폴더
-			    * @port1: vs-code를 접근하기 위해서 port
-			    * @port2: node.js 접근하기위해서 port
-			    * @port3: python.js 접근하기위해서 port
-			    * @port4: java.js 접근하기위해서 port
-			    * */
-    			cmd += " PROJECTS "+ usersDto.getName() + " 3000 8100 8200 8300";
-    			Process process = Runtime.getRuntime().exec(cmd); 
-    			process.waitFor(); 
-    			Thread.sleep(1000);
-			  
-			    //sh 파일을 통해서 Container를 올린 후에 Container를 정상적으로 올리는지 확인
-    			//현재 돌리는 Container 리스트 출력해서 비교함
-			    process = Runtime.getRuntime().exec("docker ps"); 
-			    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			    String line = "";
-			    boolean checkSucc = false;
-			    
-			    //생성된 컨테이너 확인
-			    while ((line = reader.readLine()) != null) {
-			    	if(line.contains(usersDto.getName())) {
-			    		//Container를 정상적으로 올렸으면 데이트베이스에다가 정보를 저장함
-			    		//Default 올리 프로젝트는 첫번째 프로젝트임
-			    		ContainerDto containerDto = new ContainerDto(listproject.get(0).getProjectId(), userId,  usersDto.getName(), 3000,8100,8200,8300,1);
-			    		ContainerDto inserteContainer = service.insertUserContainer(containerDto);
-			    		
-			    		container = modelMapper.map(inserteContainer, Container.class);
-			    		checkSucc = true;
-			    		break;
-			    	}
-			    }
-			    //컨테이서 정상적으로 하면 프로젝트 정보를 출력함
-			    if(checkSucc) {
-			    	return ResponseEntity.status(HttpStatus.CREATED).body(container);
-			    }
-			    else {
-			    	 return ResponseEntity.status(HttpStatus.CREATED).body(null);
-			    }
-			 
+    			//컨테이너 생성 성공할 경우에는
+    			container = service.createUserContainer(userId);
+    			if(container != null) {
+    				return ResponseEntity.status(HttpStatus.CREATED).body(container);
+    			}
+    			return ResponseEntity.status(HttpStatus.CREATED).body(null);
 			} catch (Exception e) {
 				System.out.println(e);
 				// TODO: handle exception
 			}
     	}
+    	//첫 프로젝트는 컨테이너 정보를 업데이트
+		String projectId = container.getProjectId();
+		if(projectId == null) {
+			List<Project> listProject = new ArrayList<>();
+	   		listProject = projectService.getMyProjects(userId);
+	   		UsersDto usersDto = service.getUserById(userId);
+	   		service.updateContainerForProjectId(listProject.get(0).getProjectId(), usersDto.getName());  
+	   		container = service.getUserContainer(userId);
+		}
+    	return ResponseEntity.status(HttpStatus.CREATED).body(container);
     	
-    	//이미 프로젝트를 존재하면 프로젝트정보를 출력함
-	    if(container != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(container);
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
     
-    @GetMapping("/moveeditor/{userId}/{projectId}")
-    public ResponseEntity<Container> moveEditor(@PathVariable String userId, @PathVariable String projectId)
+    //Vs-code 에디터 클릭할떄
+    @GetMapping("/move-editor/{userId}/{projectId}")
+    public ResponseEntity<UserContainer> moveEditor(@PathVariable String userId, @PathVariable String projectId)
     {
    
     	Project project = projectService.getProjectById(projectId);
-    	String path = project.getProjectPath();
-    	String type = project.getProjectType();
-    	
-    	UsersDto usersDto = service.getUserById(userId);
-    	service.updateContainerForProjectId(projectId, usersDto.getName());
-    	
-    	Container container = service.getUserContainer(userId);
-    
-	    if(container != null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(container);
-        }
+    	if(project.getProjectUserId().equals(userId)) {
+    		UsersDto usersDto = service.getUserById(userId);
+    		service.updateContainerForProjectId(projectId, usersDto.getName());
+    		
+    		//컨테이너 출력함
+    		UserContainer container = service.getUserContainer(userId);
+    		if(container != null) {
+    			return ResponseEntity.status(HttpStatus.CREATED).body(container);
+    		}
+    	}
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
-    
-    @GetMapping("/stopContainer/{userId}")
+    //컨테이너 중지됨
+    @GetMapping("/stop-container/{userId}")
     public ResponseEntity<String> stopContainer(@PathVariable String userId) throws IOException, InterruptedException
     {
    
-    	Container container = service.getUserContainer(userId);
-    	int vsCodePort = container.getState();
+    	UserContainer container = service.getUserContainer(userId);
+    	int containerState = container.getState();
     	boolean result = false;
-    	if(vsCodePort == 1) { 
+    	if(containerState == 1) { 
     		//컨테이너 실행 중일 경우는 중지시킴
     		result = service.stopContainer(container);
     	}
@@ -448,14 +387,15 @@ public class UsersController {
         }
         return ResponseEntity.status(HttpStatus.CREATED).body("fail");
     }
-    @GetMapping("/startContainer/{userId}")
+    //컨테이너 시작함
+    @GetMapping("/start-container/{userId}")
     public ResponseEntity<String> startContainer(@PathVariable String userId) throws IOException, InterruptedException
     {
    
-    	Container container = service.getUserContainer(userId);
-    	int vsCodePort = container.getState();
+    	UserContainer container = service.getUserContainer(userId);
+    	int containerPort = container.getState();
     	boolean result = false;
-    	if(vsCodePort == 0) { 
+    	if(containerPort == 0) { 
     		//컨테이너 실행 중일 경우는 다시 시작
     		result = service.startContainer(container);
     	}
@@ -465,11 +405,12 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.CREATED).body("fail");
     }
     
+    //현재 컨테이너내에 가동되어 있는 웹 서비스를 접근함
     @GetMapping("/webservice/{userId}")
     public ResponseEntity<String> webService(@PathVariable String userId) throws IOException, InterruptedException
     {
     	//현재 컨테이너내에서 올리는 프로젝트를 웹 페이지를 접근함
-    	Container container = service.getUserContainer(userId);
+    	UserContainer container = service.getUserContainer(userId);
     	Project project = projectService.getProjectById(container.getProjectId());
     	
     	String projectType = project.getProjectType();
@@ -488,7 +429,7 @@ public class UsersController {
 			default:
 				break;
 		}
-    	String checkUrl = "http://210.94.194.70:" + Integer.toString(port);
+    	String checkUrl = env.getProperty("ip.addr").toString() + ":" + Integer.toString(port);
     	URL url = new URL(checkUrl);
     	try {
     		HttpURLConnection huc = (HttpURLConnection) url.openConnection();
