@@ -3,16 +3,22 @@ package com.openeg.openegscts.analyzer.service;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.zaproxy.clientapi.core.ApiResponse;
 import org.zaproxy.clientapi.core.ApiResponseElement;
 import org.zaproxy.clientapi.core.ApiResponseList;
 import org.zaproxy.clientapi.core.ClientApi;
 import org.zaproxy.clientapi.core.ClientApiException;
 
+import com.openeg.openegscts.file.FileSaveC;
+import com.openeg.openegscts.student.service.IProjectService;
+import com.openeg.openegscts.student.service.IUsersService;
+
 
 public class Service {
 
-    private static final String ZAP_ADDRESS = "210.94.194.70"; //210.94.194.81
+    private static String ZAP_ADDRESS = null; //210.94.194.81
     private static int ZAP_PORT; //
     
     // Change to match the API key set in ZAP, or use NULL if the API key is disabled
@@ -21,11 +27,14 @@ public class Service {
     // The URL of the application to be tested
     private static String TARGET = "https://public-firing-range.appspot.com";  //default target
     
-    public static String runActiveScanRules(String url, String resultType, int port)
+    
+    public static String runActiveScanRules(String url, String resultType, String zapAddress,   int port)
     {
     	ZAP_PORT = port;
-    	ClientApi api = new ClientApi(ZAP_ADDRESS, ZAP_PORT, ZAP_API_KEY);
     	TARGET = url;
+    	ZAP_ADDRESS = zapAddress;
+    	
+    	ClientApi api = new ClientApi(ZAP_ADDRESS, ZAP_PORT, ZAP_API_KEY);
     	String result = new String("");
     	
         try {

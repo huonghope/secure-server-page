@@ -92,7 +92,7 @@ public class DynamicAnalyzer {
 			
 			String result = "";
 			Project project = projectService.getProjectById(projectId);
-			
+			String rootAPI = env.getProperty("ip.addr");
 			UserContainer container = service.getUserContainer(userId);
 			
 			//프로젝트 타입 및 해당하는 유저의 Container를 받아서 링크를 출력함
@@ -112,7 +112,7 @@ public class DynamicAnalyzer {
 				default:
 					break;
 			}
-			String checkUrl = env.getProperty("ip.addr").toString() + ":" + Integer.toString(port);
+			String checkUrl = rootAPI + ":" + Integer.toString(port);
 			//출력되는 링크를 유호하지 않을 링크인지 체크함
 	    	URL url = new URL(checkUrl);
 	    	try {
@@ -160,11 +160,12 @@ public class DynamicAnalyzer {
 	     					  .withShowAll(true)
 	     					  .withNameFilter(ctnName)
 	     					  .exec();
-	     			
+
 	     			//컨테이너 정상적으로 올림
 	     			if(containers.size() != 0 && !containers.get(0).getId().equals("")) {
-	     				Service zapapi = new Service();
-	     				result = Service.runActiveScanRules(checkUrl, typeReport, owaspContainerPort);
+	     				
+	     				String zapAPI = rootAPI.substring(rootAPI.indexOf("//") + 2, rootAPI.length());
+	     				result = Service.runActiveScanRules(checkUrl, typeReport, zapAPI,  owaspContainerPort);
 	     				
 	     				//출력된 결과를 json 파일을 저장함
 			    		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -176,6 +177,7 @@ public class DynamicAnalyzer {
 			    			
 			    		return ResponseEntity.status(HttpStatus.CREATED).body(result);
 	    			}else {
+	    				System.out.println("컨테이너 없음");
 	    				return ResponseEntity.status(HttpStatus.CREATED).body("fail");
 	    			}
 	    		}else {
@@ -233,10 +235,16 @@ public class DynamicAnalyzer {
 	      return data;
 	}
 	public void writeFile(String user, String project, String fileNameTime, String value){
-	    String userPath = "HISTORY/" + user; 
+		String rootPATH = "HISTORY/";
+		File directoryROOT = new File(rootPATH);
+		if(!directoryROOT.exists())
+		{
+			directoryROOT.mkdir();
+		}
+		
+	    String userPath = rootPATH + user; 
 	    String fileName = fileNameTime + ".json";
 
-	    String directoryName = "";
 	    File directory = new File(userPath);
 	    
 	    File directoryProject = null;
